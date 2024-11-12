@@ -1,10 +1,13 @@
 #include "helper.h"
 
 int create_new_bank_account() {
+    // name word limit
     int min_name_len = 3;
     int max_name_len = 32;
+
     char name[max_name_len + 2]; // +1 for null, +1 for extra
     
+    // id digit limit
     int id_len = 12;
     char id[id_len + 2]; // +1 for null, +1 for extra
 
@@ -92,7 +95,7 @@ int create_new_bank_account() {
             printf("Input should be in the choices.%s\n\n", TRYAGAIN);
             continue;
         } 
-        sscanf(type_buffer, "%d", &account_type); // Acc gotten
+        sscanf(type_buffer, "%d", &account_type); // Account type gotten
 
         break; // All done
     }
@@ -123,6 +126,7 @@ int create_new_bank_account() {
         return -1;
     }
 
+    // generate random number for file name (account number), while loop to always get different file names
     do {
         rand_account_number = rand() % (ACCOUNT_RAND_RANGE_HIGH - ACCOUNT_RAND_RANGE_LOW + 1) + ACCOUNT_RAND_RANGE_LOW;
         snprintf(complete_path, sizeof(complete_path), "%s/%d.txt", DIR_NAME, rand_account_number);
@@ -132,7 +136,7 @@ int create_new_bank_account() {
     } while (fptr != NULL);
     fclose(fptr);
 
-    
+    // write choices and contents to new file (amount balance 0.00)
     fptr = fopen(complete_path, "w");
     char content[BUFSIZ];
     snprintf(content, sizeof(content), "%s\n%s\n%d\n%d\n0.00", name, id, rand_account_number, account_type);
@@ -156,12 +160,14 @@ int create_new_bank_account() {
 }
 
 int delete_bank_account(int file_edited) {
+    // make sure got files inside directory
     int file_count = count_files_in_dir(DIR_NAME);
     if (file_count < 1) {
         printf("There are no bank accounts registered in %s directory.", DIR_NAME);
         return -1;
     };
 
+    // get all file paths
     char path_array[file_count][count_digits_with_base(ACCOUNT_RAND_RANGE_HIGH, 10) + 1];
     path_array_init(path_array, file_count, DIR_NAME);
 
@@ -183,7 +189,7 @@ int delete_bank_account(int file_edited) {
         print_dashes(72);
         printf("\nSelect option: ");
 
-        // Get Option
+        // Get Option to delete
         if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
             printf("Error reading input.%s\n", TRYAGAIN);
             continue;
@@ -204,12 +210,14 @@ int delete_bank_account(int file_edited) {
         }
         if (rerun) continue;
         
+        // input validation
         sscanf(buffer, "%d", &account_to_delete);
         if (account_to_delete > file_count || account_to_delete < 1 || buffer[0] == '\0') {
             printf("Input should be in the choices.%s\n", TRYAGAIN);
             continue;
         }
 
+        // delete path and check if delete success
         char del_path[PATH_MAX];
         snprintf(del_path, sizeof(del_path), "%s/%s.txt", DIR_NAME, path_array[account_to_delete - 1]);
 
@@ -228,6 +236,7 @@ int perform_balance_change(char operand) {
     char tempfile[PATH_MAX] = "\0";
     snprintf(tempfile, sizeof(tempfile), "%s/%s.txt", DIR_NAME, TEMPFILE_NAME);
 
+    // make sure got files inside directory
     int file_count = count_files_in_dir(DIR_NAME);
     if (file_count < 1) {
         printf("There are no bank accounts registered in %s directory.", DIR_NAME);
@@ -248,7 +257,7 @@ int perform_balance_change(char operand) {
     while (1)
     {
         rerun = 0;
-        // Option
+        // Option chosen by user to deposit or withdraw
         if (operand == '+')
         {
             header_ezprint("Deposit");
@@ -308,6 +317,7 @@ int perform_balance_change(char operand) {
             return 1;
         }
 
+        // get balance of chosen account
         char lines[LINES_IN_FILE][BUFSIZ];
         for (int _ = 0; _ < LINES_IN_FILE; _++) lines[_][0] = '\0';
         
@@ -339,7 +349,7 @@ int perform_balance_change(char operand) {
 
         printf("Current Balance: RM %s", lines[4]);
 
-        // Amount to deposit
+        // get amount to deposit
         if (operand == '+') printf("\nEnter amount to deposit [q to return to menu]: RM ");
         else printf("\n\nEnter amount to withdraw [q to return to menu]: RM ");
 
@@ -380,6 +390,7 @@ int perform_balance_change(char operand) {
             
         }
         
+        // in case of problem writing to file, recover past files from (tempfile) and revert file history
         rename(full_path, tempfile);
         file = fopen(full_path, "w");
         if (file == NULL) {
@@ -401,6 +412,7 @@ int perform_balance_change(char operand) {
             }
         }
         
+        // Success message and details 
         printf("\n\n");
         header_ezprint("Account Balance Successfully Changed");
         printf("Name: %s", lines[0]);
@@ -416,6 +428,7 @@ int perform_balance_change(char operand) {
 }
 
 int remittance() {
+    // make sure got files inside directory
     int file_count = count_files_in_dir(DIR_NAME);
     if (file_count < 2) {
         printf("There are less than 2 bank accounts registered.");
@@ -425,6 +438,7 @@ int remittance() {
     char tempfile[2][PATH_MAX] = {"\0", "\0"};
     for (int _ = 0; _ < 2; _++) snprintf(tempfile[_], sizeof(tempfile)[_], "%s/%s_%d.txt", DIR_NAME, TEMPFILE_NAME, _);
     
+    // get all file paths in directory
     char path_array[file_count][count_digits_with_base(ACCOUNT_RAND_RANGE_HIGH, 10) + 1];
     path_array_init(path_array, file_count, DIR_NAME);
 
@@ -454,7 +468,7 @@ int remittance() {
         f = 0;
         int i = 0;
         
-        // Choose accounts
+        // Choose accounts to transfer from and to
         while (i < 2)
         {
             rerun = 0;
@@ -498,6 +512,7 @@ int remittance() {
                 continue;
             }
             strcpy(path_buffer[i], path_array[f - 1]);
+            // check if sender and receiver are the same
             if (strcmp(path_buffer[0], path_buffer[1]) == 0) {
                 printf("Both the transferor and receipient cannot be the same.%s\n", TRYAGAIN);
                 i = 0;
@@ -524,7 +539,8 @@ int remittance() {
             printf("\n\nLog: Error opening file");
             return 1;
         }
-                
+
+        // grab current balance of sender and receiver      
         i = 0;
         while (fgets(sender_lines[i], sizeof(sender_lines[0]), file)) {
             if (i == 4) {  
@@ -558,6 +574,7 @@ int remittance() {
         }
         fclose(file);
 
+        // grab both accounts' file type
         sender_acc_type = sender_lines[3][0];
         receiver_acc_type = receiver_lines[3][0];
 
@@ -595,7 +612,7 @@ int remittance() {
                 rerun = 1;
                 break;
             }
-            // Amount to transfer
+            // Amount to transfer and check if valid
             printf("\nEnter amount to transfer");
 
             if (remittance_fee == 1.02) printf(" (Savings to Current remittance fee = 2%%)");
@@ -623,6 +640,7 @@ int remittance() {
                 continue;
             }
             
+            // calculate taxed transfer amount and check if exceed current sender balance
             taxed_transfer_amount = double_floor(transfer_amount * remittance_fee, 2);
             if (taxed_transfer_amount < 0 || taxed_transfer_amount > LONG_MAX) {
                 printf("\n\nLog: Amount limit reached. Please type a smaller number.\n\n");
@@ -630,6 +648,7 @@ int remittance() {
             }
             while (1)
             {
+                // provide total payment needed with remittance fee and prompt confirmation
                 buffer[0] = '\0';
                 printf("Required amount: RM %.2f. Are you sure? (Y/N): ", taxed_transfer_amount);
 
@@ -660,7 +679,7 @@ int remittance() {
 
             snprintf(sender_lines[4], sizeof(sender_lines[4]), "%.2f", balance - taxed_transfer_amount);
 
-            // first file '-'
+            // write to sender's file '-'
             rename(path_buffer[0], tempfile[0]);
             file = fopen(path_buffer[0], "w");
             for (int x = 0; x < LINES_IN_FILE; x++)
@@ -678,15 +697,6 @@ int remittance() {
                 }
             }
             fclose(file);
-
-            printf("\n\n");
-            header_ezprint("Amount successfully transferred.");
-
-            printf("Name: %s", sender_lines[0]);
-            printf("Identification Number: %s", sender_lines[1]);
-            printf("Account Number: %s", sender_lines[2]);
-            printf("Account type: %s\n", sender_lines[3][0] == '1' ? "Savings" : "Current");
-            printf("Amount: RM %s", sender_lines[4]);
 
             // second file
             sscanf(receiver_lines[4], "%lf", &balance);
@@ -711,6 +721,15 @@ int remittance() {
             remove(tempfile[1]);
             fclose(file);
 
+            // summary from sender file (no need for receiver file because sender doesn't need to see receiver's balance)
+            printf("\n\n");
+            header_ezprint("Amount successfully transferred.");
+
+            printf("Name: %s", sender_lines[0]);
+            printf("Identification Number: %s", sender_lines[1]);
+            printf("Account Number: %s", sender_lines[2]);
+            printf("Account type: %s\n", sender_lines[3][0] == '1' ? "Savings" : "Current");
+            printf("Amount: RM %s", sender_lines[4]);
             break;
         }
         if (rerun) continue;
