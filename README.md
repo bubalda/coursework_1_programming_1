@@ -21,7 +21,7 @@ Banking System by Mah Han Cheng
 
 ## Deposit into / Withdraw from registered bank accounts
 1. **Deposits to / Withdraws from** selected bank accounts
-    - Checks if **amount to withdraw** is valid
+    - Checks if **amount to withdraw** is valid and not out of bounds (greater than 10 digits) to prevent overflow
     - Checks if **balance is enough to withdraw**
     - Checks if **account contents** are correct
 
@@ -33,7 +33,10 @@ Banking System by Mah Han Cheng
 2. **With remittance fee** deducted from the sender:
     - From **Current** Account to **Savings** Account (**2%** fee)
     - From **Savings** Account to **Current** Account (**3%** fee)
-
+    - Checks if **amount to withdraw** is valid and not out of bounds (greater than 10 digits) to prevent overflow
+    - Checks if **balance is enough to withdraw**
+    - Checks if **account contents** are correct
+      
 ## Code Language and Version
 - C version: c17
 
@@ -102,4 +105,4 @@ In Command Prompt (cmd):
 
 ## References
 - [Compiling C on MacOS Based on code by Mark Setchell, Stack Overflow: https://stackoverflow.com/questions/32337643/how-can-i-run-a-c-program-on-mac-os-x-using-terminal](https://stackoverflow.com/questions/32337643/how-can-i-run-a-c-program-on-mac-os-x-using-terminal)
-- [How to Install GCC Compiler on Linux? by anuragsingh1022, GeeksforGeeks: https://www.geeksforgeeks.org/how-to-install-gcc-compiler-on-linux/](https://www.geeksforgeeks.org/how-to-install-gcc-compiler-on-linux/)#
+- [How to Install GCC Compiler on Linux? by anuragsingh1022, GeeksforGeeks: https://www.geeksforgeeks.org/how-to-install-gcc-compiler-on-linux/](https://www.geeksforgeeks.org/how-to-install-gcc-compiler-on-linux/)
