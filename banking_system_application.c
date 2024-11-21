@@ -115,7 +115,6 @@ int create_new_bank_account() {
             return -1;
         }
     }
-    chmod(DIR_NAME, S_IRWXU);
 
     // Get random account number (file name)
     int rand_account_number;

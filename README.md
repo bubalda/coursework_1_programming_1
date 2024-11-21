@@ -3,10 +3,10 @@ Coursework 1 for Programming I (COMP-1312)\
 Banking System by Mah Han Cheng
 
 ## Features
-+ [Creating new bank accounts](#creating_new_bank_accounts)
-+ [Deposit into / Withdraw from registered bank accounts](#deposit-into-/-withdraw-from-registered-bank-accounts)
++ [Creating new bank accounts](#creating-new-bank-accounts)
++ [Deposit into / Withdraw from registered bank accounts](#deposit-into--withdraw-from-registered-bank-accounts)
 + [Remittance](#remittance)
-+ [Delete bank accounts](#delete_bank_accounts)
++ [Delete bank accounts](#delete-bank-accounts)
 
 ## Creating new bank accounts
 1. Creates account with:
@@ -106,3 +106,4 @@ In Command Prompt (cmd):
 ## References
 - [Compiling C on MacOS Based on code by Mark Setchell, Stack Overflow: https://stackoverflow.com/questions/32337643/how-can-i-run-a-c-program-on-mac-os-x-using-terminal](https://stackoverflow.com/questions/32337643/how-can-i-run-a-c-program-on-mac-os-x-using-terminal)
 - [How to Install GCC Compiler on Linux? by anuragsingh1022, GeeksforGeeks: https://www.geeksforgeeks.org/how-to-install-gcc-compiler-on-linux/](https://www.geeksforgeeks.org/how-to-install-gcc-compiler-on-linux/)
+- [C program to list all files in a directory recursively, Codeforwin: https://codeforwin.org/c-programming/c-program-to-list-all-files-in-a-directory-recursively](https://codeforwin.org/c-programming/c-program-to-list-all-files-in-a-directory-recursively)

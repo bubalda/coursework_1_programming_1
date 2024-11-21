@@ -9,8 +9,6 @@
 #include <time.h>
 
 #include <dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #define RESPONSE_BUFFER 4
 #define LINES_IN_FILE 5
@@ -24,6 +22,7 @@ const char* DIR_NAME = "database";
 const char* TEMPFILE_NAME = "tempfile";
 
 // math related
+// count number of digits in an integer
 int count_digits_with_base(int number, int base) {
     int n = 1, ret = 0;
     do {
@@ -33,6 +32,7 @@ int count_digits_with_base(int number, int base) {
     return ret;
 }
 
+// Prevent too many floating points in input
 int tooManyFPoints(char* str) {
     int i = 0;
     while (*str != '.') str++;
@@ -47,6 +47,7 @@ int tooManyFPoints(char* str) {
     return i > 2;
 }
 
+// counts the floor of a double
 double double_floor(double value, int decimal_places) {
     if (decimal_places == -1) return 0;
     return (int) (value * pow(10, decimal_places)) / (double) pow(10, decimal_places);
@@ -126,13 +127,14 @@ void strip(char *str) {
     }
     *(end + 1) = '\0';
 
-    // shift pos (if got space in front of str)
+    // shift position (if got space in front of str)
     if (start != str) {
         memmove(str, start, end - start + 2); // +2 to include the null terminator
     }
 
 }
 
+// check if input is float
 int isfloat(char* str) {
     int dot = 0;
     if (*str == '\0') return 0;
@@ -173,61 +175,60 @@ char *remove_extentions(char* str) {
     return str;
 }
 
+// count number of files in directly
 int count_files_in_dir(const char *path) {
     int i = 0;
     int file_count = 0;
     struct dirent *entry;
-    struct stat file_stat;
 
     DIR *dir = opendir(path);
     if (dir == NULL) {
         return -1;
     }
 
+    // https://codeforwin.org/c-programming/c-program-to-list-all-files-in-a-directory-recursively
+    char full_path[PATH_MAX];
+    char file_num[16];
+    int num;
+
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp("..", entry -> d_name) == 0 || strcmp(".", entry -> d_name) == 0) continue;
         
-        char full_path[PATH_MAX];
         snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
 
-        if (stat(full_path, &file_stat) == 0 && S_ISREG(file_stat.st_mode)) {
-            const char *filename = entry->d_name;
-            int len = strlen(filename);
-            if (strcmp(filename + len - 4, ".txt") == 0) {
-                
-                char file_num[16];
-                strncpy(file_num, filename, len - 4);
-                file_num[len - 4] = '\0';
+        const char *filename = entry->d_name;
+        int len = strlen(filename);
+        if (strcmp(filename + len - 4, ".txt") == 0) {
+            
+            strncpy(file_num, filename, len - 4);
+            file_num[len - 4] = '\0';
 
-                for (int _ = 0; _ < strlen(file_num); _++)
-                {
-                    if (!isdigit(file_num[_])) {
-                        printf("Unexpected file name: %s\nExiting...", full_path);
-                        exit(EXIT_FAILURE);
-                    }
-                }
-                
-                int num = atoi(file_num);
-                if (num >= ACCOUNT_RAND_RANGE_LOW && num <= ACCOUNT_RAND_RANGE_HIGH) {
-                    file_count++;
-                } else {
+            for (int _ = 0; _ < strlen(file_num); _++)
+            {
+                if (!isdigit(file_num[_]) || file_num[0] == '0') {
                     printf("Unexpected file name: %s\nExiting...", full_path);
                     exit(EXIT_FAILURE);
                 }
             }
-        } else {
-            printf("Unexpected file name: %s\nExiting...", full_path);
-            exit(EXIT_FAILURE);
+            
+            num = atoi(file_num);
+            if (num >= ACCOUNT_RAND_RANGE_LOW && num <= ACCOUNT_RAND_RANGE_HIGH) {
+                file_count++;
+            } else {
+                printf("Unexpected file name: %s\nExiting...", full_path);
+                exit(EXIT_FAILURE);
+            }
         }
+
     }
     closedir(dir);
     return file_count;
     
 }
 
+// initialize the paths of a directory into an array
 void path_array_init(char paths[][count_digits_with_base(ACCOUNT_RAND_RANGE_HIGH, 10) + 1], int len, const char* dir_name) {
     struct dirent *entry;
-    struct stat file_stat;
 
     DIR *dir = opendir(dir_name);
     if (dir == NULL) {
@@ -236,26 +237,27 @@ void path_array_init(char paths[][count_digits_with_base(ACCOUNT_RAND_RANGE_HIGH
     }
 
     int i = 0;
+    char full_path[PATH_MAX];
     while ((entry = readdir(dir)) != NULL && i < len) {
-        char full_path[PATH_MAX];
+        if (strcmp("..", entry -> d_name) == 0 || strcmp(".", entry -> d_name) == 0) continue;
 
         snprintf(full_path, sizeof(full_path), "%s/%s", dir_name, entry->d_name);
 
-        if (stat(full_path, &file_stat) == 0 && S_ISREG(file_stat.st_mode)) {
-            strncpy(paths[i], entry->d_name, sizeof(paths[i]) - 1);
-            paths[i][sizeof(paths[i]) - 1] = '\0';  // Null-terminate
+        strncpy(paths[i], entry->d_name, sizeof(paths[i]) - 1);
+        paths[i][sizeof(paths[i]) - 1] = '\0';  // Null-terminate
 
-            char *dot = strrchr(paths[i], '.');
-            if (dot != NULL) {
-                *dot = '\0';  // Truncate at the dot
-            }
-            
-            i++;
+        char *dot = strrchr(paths[i], '.');
+        if (dot != NULL) {
+            *dot = '\0';  // Truncate at the dot
         }
+        
+        i++;
+        
     }
     closedir(dir);
 }
 
+// check if file contents are valid
 int check_file(char path[]) {
     FILE* fptr = fopen(path, "r");
 
